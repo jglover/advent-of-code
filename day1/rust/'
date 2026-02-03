@@ -1,0 +1,37 @@
+const std = @import("std");
+
+pub fn main() !void {
+  const file = try std.fs.cwd().openFile("input.txt", .{});
+  defer file.close();
+
+  var file_buffer: [4096]u8 = undefined;
+  var reader = file.reader(&file_buffer);
+  var line_no: usize = 0;
+  var counter: u64 = 0;
+  var position: u64 = 0;
+  var rotation: u64 = 0;
+  var direction_right: u8 = 0;
+
+  while (try reader.interface.takeDelimiter('\n')) |line| {
+    if (line.len > 0) {
+      if (line[0] == 'R') direction_right = 1 else direction_right = 0;
+      rotation = try std.fmt.parseInt(u64, line[1..], 10);
+      std.debug.print("direction_right {d}\n position {d}\n", .{ direction_right, position });
+
+      counter += @divFloor(rotation, 100);
+      if (direction_right == 1) {
+          position = (position + rotation) % 100;
+      } else {
+          if (position < rotation) {
+              position += 100;
+              std.debug.print("position {d}, rotation: {d}\n", .{position, rotation});
+          }
+          position = (position - rotation) % 100;
+      }
+      line_no += 1;
+
+      std.debug.print("end position {d}\n", .{ position });
+    }
+  }
+  std.debug.print("{d}\n", .{counter});
+}
